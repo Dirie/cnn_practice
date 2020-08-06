@@ -1,0 +1,111 @@
+name: "vehcle_classification"
+
+layer {
+  name: "data1"
+  type: "Data"
+  top: "data"
+  top: "label"
+  include {
+    phase: TRAIN
+  		}
+  
+    transform_param {
+    mirror: true
+    crop_size: 227
+    mean_file: "/home/dirie/HonoursProject/PYTHON/Data/vehicles_mean.binaryproto"
+  }
+  data_param {
+    source: "home/dirie/HonoursProject/PYTHON/Data/train_lmdb"
+    batch_size: 64
+    backend: LMDB
+  }
+}
+
+layer {
+  name: "data1"
+  type: "Data"
+  top: "data"
+  top: "label"
+  include {
+    phase: TEST
+  }
+  transform_param {
+    mirror: false
+    crop_size: 227
+    mean_file: "/home/dirie/HonoursProject/PYTHON/Data/vehicles_mean.binaryproto"
+  }
+  data_param {
+    source: "home/dirie/HonoursProject/PYTHON/Data/test_lmdb"
+    batch_size: 100
+    backend: LMDB
+  }
+}
+
+layer {
+  name: "conv1"
+  type: "Convolution"
+  bottom: "data1"
+  top: "conv1"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  convolution_param {
+    num_output: 20
+    kernel_size: 5
+    stride: 1
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+
+layer {
+  name: "pool1"
+  type: "Pooling"
+  bottom: "conv1"
+  top: "pool1"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+
+layer {
+  name: "ip1"
+  type: "InnerProduct"
+  bottom: "pool1"
+  top: "ip1"
+  param {
+    lr_mult: 1
+  }
+  param {
+    lr_mult: 2
+  }
+  inner_product_param {
+    num_output: 4
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "ip1"
+  bottom: "label"
+  top: "loss"
+}
+
+
